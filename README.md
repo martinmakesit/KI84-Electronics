@@ -10,7 +10,7 @@ This requires the following:
 ESP8266 Boards in Arduino IDE: https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/
 
 
-Libraries to install (Sketch->Include Library->Manage Libraries)
+##Libraries to install (Sketch->Include Library->Manage Libraries)
 
 ESP8266Audio: https://github.com/earlephilhower/ESP8266Audio
 
