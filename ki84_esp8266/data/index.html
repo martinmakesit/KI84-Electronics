@@ -1,0 +1,113 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      h1 {
+        text-align: center;
+      }
+      p {
+        text-align: left;
+      }
+      form {
+        text-align: left;
+      }
+      .button-box {
+        border: 2px solid black;
+        border-radius: 10px;
+        padding: 10px;
+        display: inline-block;
+        width: 45%;
+        box-shadow: 2px 2px 2px grey;
+        margin: 10px;
+      }
+      .button-box:first-child {
+        margin-right: 10px;
+      }
+      .button-box div {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .button-box div p:first-child {
+        margin-top: 0;
+      }
+      .button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .button-led {
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .button-led:checked {
+        background-color: #333;
+      }
+      .radio-label {
+        display: flex;
+        align-items: center;
+      }
+      @media only screen and (max-width: 600px) {
+        h1 {
+          font-size: 24px;
+        }
+        .button {
+          padding: 10px 16px;
+          font-size: 14px;
+        }
+      }
+    </style>
+    <script>
+      function sendRequest(url) {
+        fetch(url);
+      }
+      function submitLedMode() {
+        var radios = document.getElementsByName('mode');
+        for (var i = 0; i < radios.length; i++) {
+          if (radios[i].checked) {
+            sendRequest('/setLedMode?mode=' + radios[i].value);
+            break;
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>KI-84 Controls</h1>
+    <div class="button-box">
+      <div>
+        <h2>Engine Start Sequence</h2>
+        <form onsubmit="sendRequest('/startMotor'); return false;">
+          <p><button type="submit" class="button">Engine Startup</button></p>
+        </form>
+        <form onsubmit="sendRequest('/stopMotor'); return false;">
+          <p><button type="submit" class="button">Stop Engine</button></p>
+        </form>
+      </div>
+    </div>
+    <div style="clear:both;"></div>
+    <div class="button-box">
+      <div>
+        <h2>Indicator Light Controls</h2>
+        <label class="radio-label" for="mode0"><input type="radio" id="mode0" class="button-led" name="mode" value="0" {{if .ledMode eq 0}}checked{{end}}>Blinking Together</label><br>
+        <label class="radio-label" for="mode1"><input type="radio" id="mode1" class="button-led" name="mode" value="1" {{if .ledMode eq 1}}checked{{end}} checked>Solid On</label><br>
+        <label class="radio-label" for="mode2"><input type="radio" id="mode2" class="button-led" name="mode" value="2" {{if .ledMode eq 2}}checked{{end}}>Alternate Blinking</label><br>
+        <label class="radio-label" for="mode3"><input type="radio" id="mode3" class="button-led" name="mode" value="3" {{if .ledMode eq 3}}checked{{end}}>Both Off</label><br>
+        <button class="button" onclick="submitLedMode()">Submit</button>
+      </div>
+    </div>
+
+  </body>
+</html>
