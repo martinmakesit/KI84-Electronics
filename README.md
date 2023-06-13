@@ -28,3 +28,21 @@ Over the Air Updates
 
 Backup wifi hotspot config
 
+## Parts List:
+ESP8266 Mini
+
+MAX98357 I2S Audio Amplifier Module
+
+3-5v DC Motor
+
+Resistors: 220, 10k
+
+Mosfet: P30N06LE or some other N-channel logic level mosfet
+
+Capacitor (for motor): .1uf
+
+Speakers
+
+LEDs
+
+Schottky Diode
