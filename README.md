@@ -46,3 +46,7 @@ Speakers
 LEDs
 
 Schottky Diode
+
+## Schematic
+NOT TESTED, this was done after the fact from memory.
+![Schematic](https://github.com/martinmakesit/KI84-Electronics/blob/main/ki84_bb.png "Schematic")
