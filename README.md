@@ -16,28 +16,39 @@ ESP8266Audio: https://github.com/earlephilhower/ESP8266Audio
 
 ESPAsyncTCP: https://github.com/me-no-dev/ESPAsyncTCP
 
+ESPAsyncWebServer: https://github.com/me-no-dev/ESPAsyncWebServer
+
 AsyncElegantOTA: https://github.com/ayushsharma82/AsyncElegantOTA
 
 
+## Tutorials Used from https://randomnerdtutorials.com/
+
+[SPIFFS filesystem and sketch data upload](https://randomnerdtutorials.com/install-esp8266-filesystem-uploader-arduino-ide/)
+
+[ESPAsyncWebServer](https://randomnerdtutorials.com/esp8266-nodemcu-wi-fi-manager-asyncwebserver/)
+
+[ESP8266 Pinouts](https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/)
 
 ## Features
 
-Web Control of Engine and Lights
+Webpag Control of Motor and Lights via WiFi
 
 Over the Air Updates
 
 Backup wifi hotspot config
 
 ## Parts List:
+ESP8266 Dev Board
+
 ESP8266 Mini
 
 MAX98357 I2S Audio Amplifier Module
 
 3-5v DC Motor
 
-Resistors: 220, 10k
+Resistors: 100, 10k
 
-Mosfet: P30N06LE or some other N-channel logic level mosfet
+Mosfet: IRLB8721 or some other N-channel logic level mosfet
 
 Capacitor (for motor): .1uf
 
@@ -46,6 +57,36 @@ Speakers
 LEDs
 
 Schottky Diode
+
+5V power adapter
+
+### Amazon Affiliate Links to parts used:
+
+ESP8266 Dev Board: https://amzn.to/43W0EDe
+
+ESP8266 Mini: https://amzn.to/43CtpF0
+
+Arduino Uno Starter kit (for breadboard and various resistors): https://amzn.to/43AHGlw
+
+Motor: https://amzn.to/3qFRUmj
+
+LED: https://amzn.to/42WdIrd
+
+MAX98357 I2S Audio Amplifier: https://amzn.to/3X4GN29
+
+Speakers : https://amzn.to/3X5mt0A
+
+Resistors: https://amzn.to/3MVvMLW
+
+Mosfets:  https://amzn.to/3P58AO3
+
+Soldiering Iron: https://amzn.to/3oZ3o3Q
+
+Helping Hands: https://amzn.to/3oS1zWp
+
+Power Adapter: https://amzn.to/46dssVo
+
+
 
 ## Schematic
 NOT TESTED, this was done after the fact from memory.
