@@ -12,7 +12,7 @@
 
 
 String ssid = "YOUR_WIFI_SSID";
-String password = "YOUR_WIFI_PASSWORD";
+String password = "YOUR_PASSWORD";
 
 AudioGeneratorMP3 *mp3;
 AudioFileSourceSPIFFS *file;
@@ -43,13 +43,13 @@ int ledMode = 1;
 
 // Declare a variable to store the PWM value for the motor
 int motorSpeed = 0;
-const int motorInitialValue = 50;
-const int motorFirstValue = 80;
-const int motorSecondValue = 125;
-const int motorThirdValue = 255;
+const int motorInitialValue = 70;
+const int motorFirstValue = 110;
+const int motorSecondValue = 140;
+const int motorThirdValue = 180;
 
 // variable for reading the pushbutton status
-int buttonState = 0;
+bool buttonState = HIGH;
 
 // BOOL to check if the motor sequence is running
 bool motorSequenceState = false;
@@ -215,7 +215,7 @@ void setup() {
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   pinMode(MOTOR, OUTPUT);
-  pinMode(BUTTON, INPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
 
   // Initialize the leds to LOW
   digitalWrite(LED1, LOW);
@@ -260,7 +260,7 @@ void loop() {
   currentMillisMotor = millis();
   currentMillisLED = millis();
 
-  if (buttonState == HIGH && motorSequenceState == false) {
+  if (buttonState == LOW && motorSequenceState == false) {
     // handleStartMotor();
   }
 

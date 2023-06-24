@@ -2,6 +2,12 @@
 #include "AudioFileSourceSPIFFS.h"
 #include "AudioGeneratorMP3.h"
 #include "AudioOutputI2S.h"
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ESP8266WiFi.h>
+
+const char* defaultSsid = "YOUR_WIFI_SSID";
+const char* defaultPassword = "YOUR_PASSWORD";
 
 AudioGeneratorMP3 *mp3;
 AudioFileSourceSPIFFS *file;
@@ -11,6 +17,8 @@ const int lightPin1 = 12;   // Pin number for the first light
 const int lightPin2 = 14;   // Pin number for the second light
 const int motorPin = 4;     // Pin number for the motor
 const int buttonPin = 5;    // Pin number for the button
+
+
 
 unsigned long lightPreviousMillis = 0;    // Stores the previously recorded time for the lights
 unsigned long motorPreviousMillis = 0;    // Stores the previously recorded time for the motor
@@ -25,10 +33,79 @@ const unsigned long motorDuration = 30000; // Duration (in milliseconds) for mot
 const int pwmFrequency = 1000;            // Frequency of the PWM signal (in Hz)
 
 int motorPower = 0;   // Stores the current motor power level (0-255)
-boolean lightState = false;    // Stores the current state of the lights
-boolean motorState = false;    // Stores the current state of the motor
-boolean buttonState = HIGH;    // Stores the current state of the button
-boolean lastButtonState = HIGH;    // Stores the previous state of the button
+bool lightState = false;    // Stores the current state of the lights
+bool lightFlashing = false; // New variable to control flashing state
+String lightControl = "";
+bool motorState = false;    // Stores the current state of the motor
+bool buttonState = HIGH;    // Stores the current state of the button
+bool lastButtonState = HIGH;    // Stores the previous state of the button
+
+AsyncWebServer server(80);  // Create AsyncWebServer instance on port 80
+
+void handleRootPage(AsyncWebServerRequest *request) {
+  String htmlPage = "<html><head><title>Ki-84 Electronics Tutorial</title></head><body>";
+
+  // Section 1: Motor Control
+  htmlPage += "<h2>Motor Control</h2>";
+  htmlPage += "<button onclick=\"startMotor()\">Start Motor</button>";
+  htmlPage += "<button onclick=\"stopMotor()\">Stop Motor</button>";
+
+  // Section 2: Light Controls
+  htmlPage += "<h2>Light Controls</h2>";
+  htmlPage += "<form action=\"/lights\" method=\"POST\">";
+  htmlPage += "<input type=\"radio\" name=\"lightControl\" value=\"off\"> Off";
+  htmlPage += "<input type=\"radio\" name=\"lightControl\" value=\"on\"> On";
+  htmlPage += "<input type=\"radio\" name=\"lightControl\" value=\"flashing\"> Flashing";
+  htmlPage += "<br>";
+  htmlPage += "<button type=\"submit\">Submit</button>";
+  htmlPage += "</form>";
+
+  htmlPage += "<script>";
+  htmlPage += "function startMotor() {";
+  htmlPage += "fetch('/motor?command=start');";
+  htmlPage += "}";
+  htmlPage += "function stopMotor() {";
+  htmlPage += "fetch('/motor?command=stop');";
+  htmlPage += "}";
+  htmlPage += "</script>";
+
+  htmlPage += "</body></html>";
+
+  request->send(200, "text/html", htmlPage);
+}
+
+void handleMotorControl(AsyncWebServerRequest *request) {
+  Serial.println("Got Motor Request");
+  String command = request->getParam("command")->value();
+  
+  if (command == "start") {
+    Serial.println("Got Motor Start");
+    motorState = true;
+    motorPower = 0; // Start at 0% power
+    motorPreviousMillis = millis();
+    mp3->begin(file, out);
+  } else if (command == "stop") {
+    motorState = false;
+    analogWrite(motorPin, 0); // Turn off the motor
+    mp3->stop();
+  }
+
+  request->send(200, "text/plain", "OK");
+}
+
+void handleLightControl(AsyncWebServerRequest *request) {
+  Serial.println("Got Light Request");
+  if (request->hasArg("lightControl")) {
+  }
+  if (request->method() == HTTP_POST) {
+    if (request->hasArg("lightControl")) {
+      lightControl = request->arg("lightControl");
+      Serial.println(lightControl);
+    }
+  }
+
+  request->send(200, "text/plain", "OK");
+}
 
 void setup() {
   Serial.begin(115200);
@@ -45,7 +122,24 @@ void setup() {
 
   analogWriteFreq(pwmFrequency);   // Set the PWM frequency
   analogWriteRange(255);
-  Serial.println("setup good");
+
+  // Connect to Wi-Fi
+  WiFi.begin(defaultSsid, defaultPassword);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+
+  Serial.print("Connected to Wi-Fi. IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Initialize the web server
+  server.on("/", HTTP_GET, handleRootPage);
+  server.on("/motor", HTTP_GET, handleMotorControl);
+  server.on("/lights", HTTP_POST, handleLightControl);
+
+  // Start the server
+  server.begin();
 }
 
 void loop() {
@@ -54,8 +148,15 @@ void loop() {
   // Light flashing
   if (currentMillis - lightPreviousMillis >= lightInterval) {
     lightPreviousMillis = currentMillis;
-
-    lightState = !lightState;
+    if (lightControl == "off"){
+      lightState = false;
+    }
+    else if (lightControl == "on") {
+      lightState = true;
+     } 
+     else if (lightControl == "flashing") {
+      lightState = !lightState;
+     }
     digitalWrite(lightPin1, lightState);
     digitalWrite(lightPin2, lightState);
   }
@@ -70,13 +171,12 @@ void loop() {
         if (motorState) {
           motorState = false;
           analogWrite(motorPin, 0); // Turn off the motor
+          mp3->stop();
         } else {
-          Serial.println("Button Pushed");
           motorState = true;
           motorPower = 0; // Start at 0% power
           motorPreviousMillis = currentMillis;
           mp3->begin(file, out);
-          Serial.println("mp3 play");
         }
       }
       lastButtonState = buttonState;
@@ -85,31 +185,28 @@ void loop() {
 
   // Motor control
   if (motorState) {
-    unsigned long elapsedTime = currentMillis - motorPreviousMillis;
+    unsigned long motorElapsedMillis = currentMillis - motorPreviousMillis;
 
-    if (elapsedTime < rampUpStage1) {
-      motorPower = 255 * 0.1;  // 10% power
-    } else if (elapsedTime < rampUpStage1 + rampUpStage2) {
-      motorPower = 255 * 0.25; // 25% power
-    } else if (elapsedTime < rampUpStage1 + rampUpStage2 + rampUpStage3) {
-      motorPower = 255 * 0.5;  // 50% power
+    if (motorElapsedMillis <= rampUpStage1) {
+      motorPower = map(motorElapsedMillis, 0, rampUpStage1, 0, 25);
+    } else if (motorElapsedMillis <= rampUpStage2) {
+      motorPower = map(motorElapsedMillis, rampUpStage1, rampUpStage2, 25, 50);
+    } else if (motorElapsedMillis <= rampUpStage3) {
+      motorPower = map(motorElapsedMillis, rampUpStage2, rampUpStage3, 50, 100);
+    } else if (motorElapsedMillis <= rampUpStage4) {
+      motorPower = map(motorElapsedMillis, rampUpStage3, rampUpStage4, 100, 255);
+    } else if (motorElapsedMillis <= motorDuration) {
+      motorPower = 255; // Maximum power after ramp-up stages
     } else {
-      motorPower = 255;        // 100% power
-    }
-
-    analogWrite(motorPin, motorPower);
-
-    // Check if motor duration exceeded 30 seconds
-    if (currentMillis - motorPreviousMillis >= motorDuration) {
       motorState = false;
       analogWrite(motorPin, 0); // Turn off the motor
       mp3->stop();
     }
-  } else {
-    analogWrite(motorPin, 0); // Motor is off
+
+    analogWrite(motorPin, motorPower);
   }
 
   if (mp3->isRunning()) {
     if (!mp3->loop()) mp3->stop();
-  } 
+  }
 }
