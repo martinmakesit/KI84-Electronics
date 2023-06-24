@@ -31,7 +31,7 @@ AsyncElegantOTA: https://github.com/ayushsharma82/AsyncElegantOTA
 
 ## Features
 
-Webpag Control of Motor and Lights via WiFi
+Webpage Control of Motor and Lights via WiFi
 
 Over the Air Updates
 
